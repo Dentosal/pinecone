@@ -1,4 +1,4 @@
-use byteorder::{ByteOrder, LittleEndian};
+use core::convert::TryInto;
 use serde::de::{
     self,
     DeserializeSeed,
@@ -10,10 +10,7 @@ use serde::de::{
 use crate::error::{Error, Result};
 use crate::varint::VarintUsize;
 
-/// A structure for deserializing a postcard message. For now, Deserializer does not
-/// implement the same Flavor interface as the serializer does, as messages are typically
-/// easier to deserialize in place. This may change in the future for consistency, or
-/// to support items that cannot be deserialized in-place, such as compressed message types
+/// A structure for deserializing a pinecone message
 pub struct Deserializer<'de> {
     // This string starts with the input data and characters are truncated off
     // the beginning as data is parsed.
@@ -85,7 +82,7 @@ impl<'a, 'b: 'a> serde::de::SeqAccess<'b> for SeqAccess<'a, 'b> {
 impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     type Error = Error;
 
-    // Postcard does not support structures not known at compile time
+    // Pinecone does not support structures not known at compile time
     fn deserialize_any<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
@@ -182,7 +179,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
         V: Visitor<'de>,
     {
         let bytes = self.try_take_n(4)?;
-        visitor.visit_f32(LittleEndian::read_f32(bytes))
+        visitor.visit_f32(f32::from_le_bytes(bytes.try_into().unwrap()))
     }
 
     fn deserialize_f64<V>(self, visitor: V) -> Result<V::Value>
@@ -190,7 +187,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
         V: Visitor<'de>,
     {
         let bytes = self.try_take_n(8)?;
-        visitor.visit_f64(LittleEndian::read_f64(bytes))
+        visitor.visit_f64(f64::from_le_bytes(bytes.try_into().unwrap()))
     }
 
     fn deserialize_char<V>(self, visitor: V) -> Result<V::Value>
@@ -251,8 +248,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
         }
     }
 
-    // In Serde, unit means an anonymous value containing no data.
-    // Unit is not actually encoded in Postcard.
+    // Unit contains no data, so it is not actually encoded
     fn deserialize_unit<V>(self, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
@@ -260,8 +256,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
         visitor.visit_unit()
     }
 
-    // Unit struct means a named value containing no data.
-    // Unit structs are not actually encoded in Postcard.
+    // Unit struct contains no data, so it is not actually encoded
     fn deserialize_unit_struct<V>(self, _name: &'static str, visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,
@@ -343,7 +338,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
         visitor.visit_enum(self)
     }
 
-    // As a binary format, Postcard does not encode identifiers
+    // As a binary format, Pinecone does not encode identifiers
     fn deserialize_identifier<V>(self, _visitor: V) -> Result<V::Value>
     where
         V: Visitor<'de>,

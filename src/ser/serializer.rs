@@ -1,30 +1,20 @@
-use byteorder::{ByteOrder, LittleEndian};
 use serde::{ser, Serialize};
 
 use crate::error::{Error, Result};
-use crate::ser::flavors::SerFlavor;
+use crate::ser::output::SerOutput;
 use crate::varint::VarintUsize;
 
-/// A `serde` compatible serializer, generic over "Flavors" of serializing plugins.
-///
-/// It should rarely be necessary to directly use this type unless you are implementing your
-/// own [`SerFlavor`].
-///
-/// See the docs for [`SerFlavor`] for more information about "flavors" of serialization
-///
-/// [`SerFlavor`]: trait.SerFlavor.html
+/// A `serde` compatible serializer
 pub struct Serializer<F>
 where
-    F: SerFlavor,
+    F: SerOutput,
 {
-    /// This is the Flavor(s) that will be used to modify or store any bytes generated
-    /// by serialization
-    pub output: F,
+    pub(crate) output: F,
 }
 
 impl<'a, F> ser::Serializer for &'a mut Serializer<F>
 where
-    F: SerFlavor,
+    F: SerOutput,
 {
     type Ok = ();
 
@@ -93,18 +83,14 @@ where
     }
 
     fn serialize_f32(self, v: f32) -> Result<()> {
-        let mut buf = [0u8; core::mem::size_of::<f32>()];
-        LittleEndian::write_f32(&mut buf, v);
         self.output
-            .try_extend(&buf)
+            .try_extend(&v.to_le_bytes())
             .map_err(|_| Error::SerializeBufferFull)
     }
 
     fn serialize_f64(self, v: f64) -> Result<()> {
-        let mut buf = [0u8; core::mem::size_of::<f64>()];
-        LittleEndian::write_f64(&mut buf, v);
         self.output
-            .try_extend(&buf)
+            .try_extend(&v.to_le_bytes())
             .map_err(|_| Error::SerializeBufferFull)
     }
 
@@ -237,7 +223,7 @@ where
 
 impl<'a, F> ser::SerializeSeq for &'a mut Serializer<F>
 where
-    F: SerFlavor,
+    F: SerOutput,
 {
     // Must match the `Ok` type of the serializer.
     type Ok = ();
@@ -260,7 +246,7 @@ where
 
 impl<'a, F> ser::SerializeTuple for &'a mut Serializer<F>
 where
-    F: SerFlavor,
+    F: SerOutput,
 {
     type Ok = ();
     type Error = Error;
@@ -279,7 +265,7 @@ where
 
 impl<'a, F> ser::SerializeTupleStruct for &'a mut Serializer<F>
 where
-    F: SerFlavor,
+    F: SerOutput,
 {
     type Ok = ();
     type Error = Error;
@@ -298,7 +284,7 @@ where
 
 impl<'a, F> ser::SerializeTupleVariant for &'a mut Serializer<F>
 where
-    F: SerFlavor,
+    F: SerOutput,
 {
     type Ok = ();
     type Error = Error;
@@ -317,7 +303,7 @@ where
 
 impl<'a, F> ser::SerializeMap for &'a mut Serializer<F>
 where
-    F: SerFlavor,
+    F: SerOutput,
 {
     type Ok = ();
     type Error = Error;
@@ -343,7 +329,7 @@ where
 
 impl<'a, F> ser::SerializeStruct for &'a mut Serializer<F>
 where
-    F: SerFlavor,
+    F: SerOutput,
 {
     type Ok = ();
     type Error = Error;
@@ -362,7 +348,7 @@ where
 
 impl<'a, F> ser::SerializeStructVariant for &'a mut Serializer<F>
 where
-    F: SerFlavor,
+    F: SerOutput,
 {
     type Ok = ();
     type Error = Error;

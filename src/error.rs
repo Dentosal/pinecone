@@ -2,12 +2,12 @@
 
 use core::fmt::{Display, Formatter};
 
-/// This is the error type used by Postcard
+/// This is the error type used by Pinecone
 #[derive(Debug, Eq, PartialEq)]
 pub enum Error {
-    /// This is a feature that PostCard will never implement
+    /// This is a feature that Pinecone will never implement
     WontImplement,
-    /// This is a feature that Postcard intends to support, but does not yet
+    /// This is a feature that Pinecone intends to support, but does not yet
     NotYetImplemented,
     /// The serialize buffer is full
     SerializeBufferFull,
@@ -42,9 +42,9 @@ impl Display for Error {
             f,
             "{}",
             match self {
-                WontImplement => "This is a feature that PostCard will never implement",
+                WontImplement => "This is a feature that Pinecone will never implement",
                 NotYetImplemented => {
-                    "This is a feature that Postcard intends to support, but does not yet"
+                    "This is a feature that Pinecone is not supported yet"
                 }
                 SerializeBufferFull => "The serialize buffer is full",
                 SerializeSeqLengthUnknown => "The length of a sequence must be known",
@@ -65,7 +65,8 @@ impl Display for Error {
     }
 }
 
-/// This is the Result type used by Postcard.
+/// This is the Result type used by Pinecone.
+#[must_use]
 pub type Result<T> = ::core::result::Result<T, Error>;
 
 impl serde::ser::Error for Error {
