@@ -1,8 +1,7 @@
 use core::ops::Index;
 use core::ops::IndexMut;
 
-#[cfg(not(feature = "use-std"))]
-use alloc::prelude::v1::*;
+use crate::prelude::*;
 
 /// Generic serialization target
 pub trait SerOutput {

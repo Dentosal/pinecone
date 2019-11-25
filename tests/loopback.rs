@@ -8,6 +8,8 @@ use serde::{Deserialize, Serialize};
 
 use pinecone::{from_bytes, to_vec};
 
+use hashbrown::HashMap;
+
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
 struct BasicU8S {
     st: u16,
@@ -52,6 +54,15 @@ struct RefStruct<'a> {
     str_s: &'a str,
 }
 
+#[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
+struct GenericVector<T>(Vec<T>);
+
+#[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
+struct IntMapping(HashMap<u8, u8>);
+
+#[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
+struct StringMapping(HashMap<String, String>);
+
 #[test]
 fn loopback() {
     // Basic types
@@ -80,7 +91,7 @@ fn loopback() {
         ],
     );
 
-    // Enums!
+    // Enums
     test_one(BasicEnum::Bim, &[0x01]);
     test_one(
         DataEnum::Bim(u64::max_value()),
@@ -104,10 +115,10 @@ fn loopback() {
     );
     test_one(DataEnum::Sho(0x6969, 0x07), &[0x05, 0x69, 0x69, 0x07]);
 
-    // Tuples!
+    // Tuples
     test_one((0x12u8, 0xC7A5u16), &[0x12, 0xA5, 0xC7]);
 
-    // Structs!
+    // Structs
     test_one(NewTypeStruct(5), &[0x05, 0x00, 0x00, 0x00]);
     test_one(TupleStruct((0xA0, 0x1234)), &[0xA0, 0x34, 0x12]);
 
@@ -118,6 +129,19 @@ fn loopback() {
     let mut input: String = String::new();
     write!(&mut input, "helLO!").unwrap();
     test_one(input, &[0x06, b'h', b'e', b'l', b'L', b'O', b'!']);
+
+    test_one(
+        GenericVector(vec![String::new(), "a".to_string(), "bc".to_string()]),
+        &[3, 0, 1, b'a', 2, b'b', b'c'],
+    );
+
+    // Data containers
+    test_opaque(IntMapping(HashMap::new()));
+    test_opaque(StringMapping(HashMap::new()));
+    // test_opaque(IntMapping(hashmap! {1 => 2, 3 => 4}));
+    // test_opaque(StringMapping(
+    //     hashmap! {"a".to_string() => "b".to_string(), "cd".to_string() => "ef".to_string()},
+    // ));
 }
 
 fn test_one<T>(data: T, ser_rep: &[u8])
@@ -126,9 +150,23 @@ where
 {
     let serialized: Vec<u8> = to_vec(&data).unwrap();
     assert_eq!(serialized.len(), ser_rep.len());
-    let mut x: ::std::vec::Vec<u8> = vec![];
+    let mut x: Vec<u8> = vec![];
     x.extend(serialized.deref().iter().cloned());
     assert_eq!(x, ser_rep);
+    {
+        let deserialized: T = from_bytes(&x).unwrap();
+        assert_eq!(data, deserialized);
+    }
+}
+
+fn test_opaque<T>(data: T)
+where
+    T: Serialize + DeserializeOwned + Eq + PartialEq + Debug,
+{
+    let serialized: Vec<u8> = to_vec(&data).unwrap();
+    let mut x: Vec<u8> = vec![];
+    x.extend(serialized.deref().iter().cloned());
+    println!("SER {:?}", x);
     {
         let deserialized: T = from_bytes(&x).unwrap();
         assert_eq!(data, deserialized);

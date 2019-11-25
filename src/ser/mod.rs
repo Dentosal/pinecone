@@ -4,8 +4,7 @@ use crate::error::{Error, Result};
 use crate::ser::output::{SerOutput, SliceOutput};
 use crate::ser::serializer::Serializer;
 
-#[cfg(not(feature = "use-std"))]
-use alloc::prelude::v1::*;
+use crate::prelude::*;
 
 pub mod output;
 pub(crate) mod serializer;
@@ -90,8 +89,7 @@ mod test {
     use core::ops::Deref;
     use serde::Deserialize;
 
-    #[cfg(not(feature = "use-std"))]
-    use alloc::prelude::v1::*;
+    use crate::prelude::*;
 
     #[test]
     fn ser_u8() {
@@ -343,7 +341,7 @@ mod test {
     }
 
     #[test]
-    fn heapless_data() {
+    fn vec() {
         let mut input: Vec<u8> = Vec::new();
         input.extend_from_slice(&[0x01, 0x02, 0x03, 0x04]);
         let output: Vec<u8> = to_vec(&input).unwrap();
@@ -353,5 +351,23 @@ mod test {
         write!(&mut input, "helLO!").unwrap();
         let output: Vec<u8> = to_vec(&input).unwrap();
         assert_eq!(&[0x06, b'h', b'e', b'l', b'L', b'O', b'!'], output.deref());
+    }
+
+    #[test]
+    fn hashmap() {
+        let mut input: HashMap<u8, u8> = HashMap::new();
+
+        let output: Vec<u8> = to_vec(&input).unwrap();
+        assert_eq!(&[0], output.deref());
+
+        input.insert(10, 15);
+        let output: Vec<u8> = to_vec(&input).unwrap();
+        assert_eq!(&[1, 10, 15], output.deref());
+
+        input.insert(20, 25);
+        let output: Vec<u8> = to_vec(&input).unwrap();
+        assert!(
+            (&[2, 10, 15, 20, 25] == output.deref()) || (&[2, 20, 25, 10, 15] == output.deref())
+        );
     }
 }

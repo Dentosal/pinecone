@@ -2,17 +2,17 @@
 
 use core::fmt::{Display, Formatter};
 
+use crate::prelude::*;
+
 /// This is the error type used by Pinecone
 #[derive(Debug, Eq, PartialEq)]
 pub enum Error {
     /// This is a feature that Pinecone will never implement
     WontImplement,
-    /// This is a feature that Pinecone intends to support, but does not yet
-    NotYetImplemented,
     /// The serialize buffer is full
     SerializeBufferFull,
-    /// The length of a sequence must be known
-    SerializeSeqLengthUnknown,
+    /// The length of a sequence or map must be known
+    SerializeLengthUnknown,
     /// Hit the end of buffer, expected more data
     DeserializeUnexpectedEnd,
     /// Found a varint that didn't terminate. Is the usize too big for this platform?
@@ -30,38 +30,14 @@ pub enum Error {
     /// The original data was not well encoded
     DeserializeBadEncoding,
     /// Serde Serialization Error
-    SerdeSerCustom,
+    SerdeSerCustom(String),
     /// Serde Deserialization Error
-    SerdeDeCustom,
+    SerdeDeCustom(String),
 }
 
 impl Display for Error {
     fn fmt(&self, f: &mut Formatter) -> core::fmt::Result {
-        use Error::*;
-        write!(
-            f,
-            "{}",
-            match self {
-                WontImplement => "This is a feature that Pinecone will never implement",
-                NotYetImplemented => {
-                    "This is a feature that Pinecone is not supported yet"
-                }
-                SerializeBufferFull => "The serialize buffer is full",
-                SerializeSeqLengthUnknown => "The length of a sequence must be known",
-                DeserializeUnexpectedEnd => "Hit the end of buffer, expected more data",
-                DeserializeBadVarint => {
-                    "Found a varint that didn't terminate. Is the usize too big for this platform?"
-                }
-                DeserializeBadBool => "Found a bool that wasn't 0 or 1",
-                DeserializeBadChar => "Found an invalid unicode char",
-                DeserializeBadUtf8 => "Tried to parse invalid utf-8",
-                DeserializeBadOption => "Found an Option discriminant that wasn't 0 or 1",
-                DeserializeBadEnum => "Found an enum discriminant that was > u32::max_value()",
-                DeserializeBadEncoding => "The original data was not well encoded",
-                SerdeSerCustom => "Serde Serialization Error",
-                SerdeDeCustom => "Serde Deserialization Error",
-            }
-        )
+        write!(f, "{:?}", self)
     }
 }
 
@@ -70,20 +46,20 @@ impl Display for Error {
 pub type Result<T> = ::core::result::Result<T, Error>;
 
 impl serde::ser::Error for Error {
-    fn custom<T>(_msg: T) -> Self
+    fn custom<T>(msg: T) -> Self
     where
         T: Display,
     {
-        Error::SerdeSerCustom
+        Error::SerdeSerCustom(format!("{}", msg))
     }
 }
 
 impl serde::de::Error for Error {
-    fn custom<T>(_msg: T) -> Self
+    fn custom<T>(msg: T) -> Self
     where
         T: Display,
     {
-        Error::SerdeDeCustom
+        Error::SerdeDeCustom(format!("{}", msg))
     }
 }
 

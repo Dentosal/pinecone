@@ -33,20 +33,33 @@
 //! assert_eq!(from_bytes(&buffer), Ok(original));
 //! ```
 
-#![cfg_attr(not(any(test, feature = "use-std")), no_std)]
-#![cfg_attr(not(any(test, feature = "use-std")), feature(alloc_prelude))]
-#![warn(missing_docs)]
+#![cfg_attr(not(feature = "use-std"), no_std)]
+#![cfg_attr(not(feature = "use-std"), feature(alloc_prelude))]
+// #![deny(missing_docs)]
+#![allow(unused_imports)]
 
-#[cfg(all(test, not(feature = "use-std")))]
-compile_error!("Trying to run tests without std. Supply --features use-std to run.");
+// #[cfg(all(test, not(feature = "use-std")))]
+// compile_error!("Trying to run tests without std. Supply --features use-std to run.");
+
+#[cfg(not(feature = "use-std"))]
+extern crate alloc;
+
+#[cfg(not(feature = "use-std"))]
+mod prelude {
+    pub use alloc::format;
+    pub use alloc::prelude::v1::*;
+    pub use hashbrown::HashMap;
+}
+
+#[cfg(feature = "use-std")]
+mod prelude {
+    pub use std::collections::HashMap;
+}
 
 mod de;
 mod error;
 mod ser;
 mod varint;
-
-#[cfg(not(feature = "use-std"))]
-extern crate alloc;
 
 pub use de::deserializer::Deserializer;
 pub use de::{from_bytes, take_from_bytes};

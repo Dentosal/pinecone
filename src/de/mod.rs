@@ -39,8 +39,7 @@ mod test {
     use core::ops::Deref;
     use serde::{Deserialize, Serialize};
 
-    #[cfg(not(feature = "use-std"))]
-    use alloc::prelude::v1::*;
+    use crate::prelude::*;
 
     #[test]
     fn de_u8() {
@@ -321,7 +320,7 @@ mod test {
     }
 
     #[test]
-    fn heapless_data() {
+    fn vec() {
         let mut input: Vec<u8> = Vec::new();
         input.extend_from_slice(&[0x01, 0x02, 0x03, 0x04]);
         let output: Vec<u8> = to_vec(&input).unwrap();
@@ -335,5 +334,19 @@ mod test {
         assert_eq!(&[0x06, b'h', b'e', b'l', b'L', b'O', b'!'], output.deref());
         let out: String = from_bytes(output.deref()).unwrap();
         assert_eq!(input, out);
+    }
+
+    #[test]
+    fn hashmap() {
+        let result: HashMap<u8, u8> = from_bytes(&[0]).unwrap();
+        assert!(result.is_empty());
+
+        let mut hm = HashMap::new();
+        hm.insert(1, 2);
+        hm.insert(3, 4);
+        hm.insert(5, 6);
+
+        let result: HashMap<u8, u8> = from_bytes(&[3, 1, 2, 3, 4, 5, 6]).unwrap();
+        assert_eq!(result, hm);
     }
 }

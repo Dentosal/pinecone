@@ -1,6 +1,6 @@
 [package]
 name = "pinecone"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Hannes Karppila <hannes@dento.fi>"]
 edition = "2018"
 readme = "README.md"
@@ -21,13 +21,15 @@ keywords = [
 [package.metadata.docs.rs]
 all-features = true
 
-[dependencies]
-
 [dependencies.serde]
 version = "1.0.100"
 default-features = false
 features = ["derive", "alloc"]
 
+[dependencies.hashbrown]
+version = "0.6.3"
+features = ["nightly", "inline-more", "serde"]
+
 [features]
-use-std = [] # Use std instead of alloc
+use-std = ["serde/std"] # Use std instead of alloc
 defaults = []
