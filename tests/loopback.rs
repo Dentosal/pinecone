@@ -46,6 +46,9 @@ enum DataEnum {
 struct NewTypeStruct(u32);
 
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
+struct PairStruct(u8, u16);
+
+#[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
 struct TupleStruct((u8, u16));
 
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
@@ -120,6 +123,7 @@ fn loopback() {
 
     // Structs
     test_one(NewTypeStruct(5), &[0x05, 0x00, 0x00, 0x00]);
+    test_one(PairStruct(0xA0, 0x1234), &[0xA0, 0x34, 0x12]);
     test_one(TupleStruct((0xA0, 0x1234)), &[0xA0, 0x34, 0x12]);
 
     let mut input: Vec<u8> = Vec::new();

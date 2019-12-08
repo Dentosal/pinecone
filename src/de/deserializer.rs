@@ -315,13 +315,13 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     fn deserialize_tuple_struct<V>(
         self,
         _name: &'static str,
-        _len: usize,
+        len: usize,
         visitor: V,
     ) -> Result<V::Value>
     where
         V: Visitor<'de>,
     {
-        self.deserialize_seq(visitor)
+        self.deserialize_tuple(len, visitor)
     }
 
     fn deserialize_map<V>(self, visitor: V) -> Result<V::Value>

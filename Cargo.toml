@@ -1,6 +1,6 @@
 [package]
 name = "pinecone"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["Hannes Karppila <hannes@dento.fi>"]
 edition = "2018"
 readme = "README.md"

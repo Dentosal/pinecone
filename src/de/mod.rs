@@ -265,6 +265,9 @@ mod test {
     pub struct NewTypeStruct(u32);
 
     #[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
+    pub struct PairStruct(u8, u16);
+
+    #[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
     pub struct TupleStruct((u8, u16));
 
     #[test]
@@ -273,6 +276,11 @@ mod test {
         assert_eq!(&[0x05, 0x00, 0x00, 0x00], output.deref());
         let out: NewTypeStruct = from_bytes(output.deref()).unwrap();
         assert_eq!(out, NewTypeStruct(5));
+
+        let output: Vec<u8> = to_vec(&PairStruct(0xA0, 0x1234)).unwrap();
+        assert_eq!(&[0xA0, 0x34, 0x12], output.deref());
+        let out: PairStruct = from_bytes(output.deref()).unwrap();
+        assert_eq!(out, PairStruct(0xA0, 0x1234));
 
         let output: Vec<u8> = to_vec(&TupleStruct((0xA0, 0x1234))).unwrap();
         assert_eq!(&[0xA0, 0x34, 0x12], output.deref());
