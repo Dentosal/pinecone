@@ -9,7 +9,7 @@ Pinecone is a minimalistic `no_std` + `alloc` fork of [Postcard](https://github.
 
 Pinecone always assumes that deserialization target is correct.
 It is fully possible to deserialize into an incorrect type.
-However, this provides requires less space and is faster to decode speed.
+However, this requires less space and is faster to decode.
 
 ## Usage
 
