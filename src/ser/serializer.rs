@@ -95,9 +95,7 @@ where
     }
 
     fn serialize_char(self, v: char) -> Result<()> {
-        let mut buf = [0u8; 4];
-        let strsl = v.encode_utf8(&mut buf);
-        strsl.serialize(self)
+        self.serialize_u32(v as u32)
     }
 
     fn serialize_str(self, v: &str) -> Result<()> {

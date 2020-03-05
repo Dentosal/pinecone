@@ -139,6 +139,14 @@ fn loopback() {
         &[3, 0, 1, b'a', 2, b'b', b'c'],
     );
 
+    // Chars
+    test_opaque('a');
+    test_opaque('ä');
+    test_opaque('ह');
+    test_opaque('€');
+    test_opaque('한');
+    test_opaque('𐍈');
+
     // Data containers
     test_opaque(IntMapping(HashMap::new()));
     test_opaque(StringMapping(HashMap::new()));
