@@ -34,7 +34,6 @@
 //! ```
 
 #![cfg_attr(not(feature = "use-std"), no_std)]
-#![cfg_attr(not(feature = "use-std"), feature(alloc_prelude))]
 // #![deny(missing_docs)]
 #![allow(unused_imports)]
 
@@ -47,7 +46,7 @@ extern crate alloc;
 #[cfg(not(feature = "use-std"))]
 mod prelude {
     pub use alloc::format;
-    pub use alloc::prelude::v1::*;
+    pub use alloc::{string::String, vec::Vec};
     pub use hashbrown::HashMap;
 }
 
