@@ -47,11 +47,13 @@ extern crate alloc;
 mod prelude {
     pub use alloc::format;
     pub use alloc::{string::String, vec::Vec};
+    #[cfg(test)]
     pub use hashbrown::HashMap;
 }
 
 #[cfg(feature = "use-std")]
 mod prelude {
+    #[cfg(test)]
     pub use std::collections::HashMap;
 }
 
